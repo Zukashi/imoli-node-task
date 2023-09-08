@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "@types/cors": "^2.8.14",
+    "axios": "^1.5.0",
     "cors": "^2.8.5",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.1.13",
@@ -15,16 +15,22 @@
     "test": "tests"
   },
   "scripts": {
-    "start-dev": "ts-node-dev index.ts"
+    "start-dev": "ts-node-dev index.ts",
+    "test": "jest --verbose ./tests/unit/controllers"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "devDependencies": {
+    "@types/cors": "^2.8.14",
     "@types/express": "^4.17.17",
+    "@types/jest": "^29.5.4",
     "@types/node": "^20.5.9",
     "express": "^4.18.2",
+    "jest": "^29.6.4",
+    "jest-mock-express": "^0.1.1",
+    "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
   }
 }
