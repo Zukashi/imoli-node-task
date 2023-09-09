@@ -1,4 +1,7 @@
 import { DataSource } from "typeorm"
+import {Character} from "../Character/entities/Character.entity";
+import {Favorite} from "../Favorites/entities/Favorite.entity";
+import {Film} from "../Film/entities/Film.entity";
 
 export const myDataSource = new DataSource({
     type: "postgres",
@@ -7,7 +10,7 @@ export const myDataSource = new DataSource({
     username: "postgres",
     password: "",
     database: "imoli",
-    entities: ["src/entity/*.ts"],
+    entities: [Character,Favorite,Film],
     logging: true,
     synchronize: true,
 })

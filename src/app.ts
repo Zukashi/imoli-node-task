@@ -3,8 +3,8 @@ import {myDataSource} from "./config/app-data-source";
 import cors from 'cors';
 import { Request, Response } from 'express';
 import {handleError} from "./utils/errors";
-import {FilmController} from "./controllers/filmController";
-import filmRouter from "./routers/filmRouter";
+import {filmRouter} from "./Film/filmRouter";
+import {favoritesRouter} from "./Favorites/favoriteRouter";
 export const app = express();
 
 
@@ -23,6 +23,7 @@ app.use(cors());
 app.use(express.json());
 app.use(handleError);
 app.use('/films', filmRouter);
+app.use('/favorites', favoritesRouter);
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World');
 });
