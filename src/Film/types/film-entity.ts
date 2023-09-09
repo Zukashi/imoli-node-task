@@ -1,3 +1,5 @@
+import {Character} from "../../Character/entities/Character.entity";
+
 export interface RawFilm {
     title: string;
     episode_id: number;
