@@ -4,7 +4,7 @@ import {
     Column,
     ManyToMany,
     JoinTable,
-    ManyToOne
+    ManyToOne, OneToMany
 } from 'typeorm';
 import {Character} from "../../Character/entities/Character.entity";
 import {Favorite} from "../../Favorites/entities/Favorite.entity";
@@ -20,10 +20,6 @@ export class Film {
     @Column()
     release_date: Date;
 
-    @ManyToMany(() => Character, (character) => character.films, { cascade: true })
-    @JoinTable()
+    @OneToMany(() => Character, (character) => character.film, { cascade: true })
     characters: Character[];
-
-    @ManyToOne(() => Favorite, (favorite) => favorite.films, { cascade: true })
-    favorite: Favorite;
 }

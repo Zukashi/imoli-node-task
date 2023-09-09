@@ -3,8 +3,11 @@ import {v4} from 'uuid';
 import {Character} from "../Character/entities/Character.entity";
 import {FilmService} from "../Film/filmService";
 import {axiosSwapi} from "../config/apiClient";
-import {RawCharacter} from "../Character/types/character-entity";
+import {RawCharacter, RawCharacterApi} from "../Character/types/character-entity";
 import {Film} from "../Film/entities/Film.entity";
+import {FilmApiResponse, RawFilm} from "../Film/types";
+import {log} from "util";
+import axios from "axios";
 
 export class FavoriteService {
     // constructor, other methods...
@@ -14,55 +17,49 @@ export class FavoriteService {
             const characterRepository = transactionalEntityManager.getRepository(Character);
             const filmRepository = transactionalEntityManager.getRepository(Film);
 
-            for (const id of filmIds) {
-                let film = await this.filmService.fetchFilmById(id);
-                let filmExist = await filmRepository.findOne({ where: { title: film.title } });
+            {/*I download all films data at once instead of looping through each film to make it faster through filtering it on my own   */}
+            const {data}:{data:RawFilm[]} = await axiosSwapi.get(`films`);
+            const films = data.filter(film => filmIds.includes(film.episode_id));
 
-                if (!filmExist) {
-                    const newFilm = filmRepository.create({
-                        id: v4(),
-                        title: film.title,
-                        release_date: film.release_date
+            for (const detail of films) {
+                const data:RawFilm = detail
+
+                let film = await filmRepository.findOne({ where:{title:data.title} });
+                const characterUrls = data.characters || [];
+                const characters = [];
+
+
+                for (const charUrl of characterUrls) {
+                    /* I had two options for handling character details in films:
+                    1. Store character URLs, making the process faster and ensuring up-to-date data from the API. However, this would require fetching characters every time they're needed.
+                    2. Fetch character details and store them in the database, as I've done. This approach reduces the load on subsequent requests and provides easy access to character information.
+
+                     I went with the second one
+                     */
+                        const characterResponse = await axios.get(charUrl);
+                        const characterIfExistsAlreadyInDb = await characterRepository.findBy({name:characterResponse.data.name});
+                        if(!(characterIfExistsAlreadyInDb.length)){
+                            const character = characterRepository.create({
+                                id: v4(),
+                                name: characterResponse.data.name,
+                                film:film
+                            });
+                            await characterRepository.save(character);
+                            characters.push(character);
+                        }
+
+
+                };
+
+                if (!film) {
+                    film = filmRepository.create({
+                        id: v4(), // Using UUID v4 for uniqueness
+                        title: data.title,
+                        release_date: data.release_date,
+                        characters: characters  // Assign the fetched or created Character entities here
                     });
-                    await filmRepository.save(newFilm);
+                    await filmRepository.save(film);
                 }
-                return
-            //     let filmExist2 = await filmRepository.findOne({ where: { title: film.title } });
-            //     console.log(filmExist2)
-            //
-            //     for (const character of film.characters) {
-            //         let characterDetails: RawCharacter;
-            //         try {
-            //             const {data} = await axiosSwapi.get(character);
-            //             characterDetails = data;
-            //         } catch (error) {
-            //             console.error(`Could not fetch details for character: ${character}`);
-            //             continue;
-            //         }
-            //         const existingCharacter = await characterRepository.findOne({ where: { name: characterDetails.name } });
-            //         if (!existingCharacter) {
-            //             const films = await Promise.all(
-            //                 characterDetails.films.map(async (film) => {
-            //                     const {data: filmRaw} = await axiosSwapi.get(film);
-            //                     return {
-            //                         title: filmRaw.title,
-            //                         release_date: filmRaw.release_date,
-            //                         id: v4(),
-            //                     };
-            //                 })
-            //             );
-            //             const newCharacter = characterRepository.create({
-            //                 id: v4(),
-            //                 name: characterDetails.name,
-            //                 films
-            //             });
-            //             console.log(newCharacter)
-            //             return
-            //             await characterRepository.save(newCharacter);
-            //         } else {
-            //             console.error(`Character with the name ${characterDetails.name} already exists.`);
-            //         }
-            //     }
             }
         });
     }

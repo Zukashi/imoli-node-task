@@ -16,3 +16,10 @@ export interface RawCharacter  {
     edited: string;
     url: string;
 };
+
+export interface RawCharacterApi  {
+    count:number;
+    next:string;
+    previous:null | string;
+    results:RawCharacter[]
+};

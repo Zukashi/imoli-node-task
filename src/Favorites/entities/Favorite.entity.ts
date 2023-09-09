@@ -9,7 +9,5 @@ export class Favorite {
     @Column()
     name: string;
 
-    @OneToMany(() => Film, (film) => film.favorite)
-    @JoinTable()
-    films: Film[];
+
 }
