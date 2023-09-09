@@ -4,7 +4,7 @@ import { FilmController } from '../../../src/controllers/filmController';
 
 jest.mock('../../../src/services/filmService');
 
-describe('FilmController - handleGetFilms method', () => {
+describe('GET /films', () => {
     let mockRequest: Partial<Request>;
     let mockResponse: Partial<Response>;
     let filmService: FilmService;

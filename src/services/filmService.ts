@@ -1,10 +1,11 @@
 import axios, { AxiosResponse } from 'axios';
-import {RawFilm, SimplifiedFilm} from "../types";
+import {FilmApiResponse, RawFilm, SimplifiedFilm} from "../types";
+import {axiosSwapi} from "../config/apiClient";
 
 export class FilmService {
     public async fetchFilms(): Promise<SimplifiedFilm[]> {
         try {
-            const response: AxiosResponse<{ results: RawFilm[] }> = await axios.get('films');
+            const response: AxiosResponse<FilmApiResponse> = await axiosSwapi.get('films');
             return response.data.results.map((film: RawFilm) => ({
                 title: film.title,
                 release_date: film.release_date,

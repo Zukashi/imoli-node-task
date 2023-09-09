@@ -6,6 +6,6 @@ const router = Router();
 const filmService = new FilmService();
 const filmController = new FilmController(filmService);
 
-router.get('/films', (req, res) => filmController.handleGetFilms(req, res));
+router.get('/', (req, res) => filmController.handleGetFilms(req, res));
 
 export default router;

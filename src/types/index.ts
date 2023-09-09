@@ -1,1 +1,1 @@
-export {RawFilm, SimplifiedFilm} from './film'
+export {RawFilm, SimplifiedFilm, FilmApiResponse} from './film'

@@ -1,5 +1,5 @@
 import express from 'express';
-import {myDataSource} from "./utils/app-data-source";
+import {myDataSource} from "./config/app-data-source";
 import cors from 'cors';
 import { Request, Response } from 'express';
 import {handleError} from "./utils/errors";
@@ -8,7 +8,7 @@ import filmRouter from "./routers/filmRouter";
 export const app = express();
 
 
-app.use('/films', filmRouter);
+
 // establish database connection
 myDataSource
     .initialize()
@@ -22,6 +22,7 @@ myDataSource
 app.use(cors());
 app.use(express.json());
 app.use(handleError);
+app.use('/films', filmRouter);
 app.get('/', (req: Request, res: Response) => {
     res.send('Hello World');
 });

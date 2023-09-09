@@ -20,3 +20,10 @@ export interface SimplifiedFilm {
     release_date: string;
     id: number;
 }
+
+export interface FilmApiResponse  {
+    count: number;
+    next: null | string; // Replace with the correct type if known
+    previous: null | string; // Replace with the correct type if known
+    results: RawFilm[];
+};
