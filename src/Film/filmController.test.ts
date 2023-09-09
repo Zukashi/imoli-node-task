@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { FilmService } from '../../../src/services/filmService';
-import { FilmController } from '../../../src/controllers/filmController';
+import { FilmService } from './filmService';
+import { FilmController } from './filmController';
 
 jest.mock('../../../src/services/filmService');
 

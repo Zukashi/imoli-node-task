@@ -1,7 +1,7 @@
 // FilmController.ts
 import { Request, Response } from 'express';
 import {InternalServiceError} from "../utils/errors";
-import {FilmService} from "../services/filmService";
+import {FilmService} from "./filmService";
 
 export class FilmController {
     private filmService: FilmService;
