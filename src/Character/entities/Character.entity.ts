@@ -9,6 +9,5 @@ export class Character {
     @Column({ unique: true })
     name: string;
 
-    @ManyToOne(() => Film, (film) => film.characters)
-    film: Film;
+
 }

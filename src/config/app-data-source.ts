@@ -11,6 +11,6 @@ export const myDataSource = new DataSource({
     password: "",
     database: "postgres",
     entities: [Character,Favorite,Film],
-    logging: true,
+
     synchronize: true,
 })

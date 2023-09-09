@@ -24,34 +24,46 @@ export class FavoriteService {
             for (const detail of films) {
                 const data:RawFilm = detail
 
-                let film = await filmRepository.findOne({ where:{title:data.title} });
+                let film = await filmRepository.findOne({ where:{title:data.title}, relations:{
+                    characters:true
+                    } });
                 const characterUrls = data.characters || [];
                 const characters = [];
 
+                // If film already exists then dont check characters because they are already inside db
+                 if(!film){
+                     for (const charUrl of characterUrls) {
+                         /* I had two options for handling character details in films:
+                         1. Store character URLs, making the process faster and ensuring up-to-date data from the API. However, this would require fetching characters every time they're needed.
+                         2. Fetch character details and store them in the database, as I've done. This approach reduces the load on subsequent requests and provides easy access to character information.
 
-                for (const charUrl of characterUrls) {
-                    /* I had two options for handling character details in films:
-                    1. Store character URLs, making the process faster and ensuring up-to-date data from the API. However, this would require fetching characters every time they're needed.
-                    2. Fetch character details and store them in the database, as I've done. This approach reduces the load on subsequent requests and provides easy access to character information.
+                          I went with the second one
+                          */
+                         const characterResponse = await axios.get(charUrl);
+                         const characterIfExistsAlreadyInDb = await characterRepository.findBy({name:characterResponse.data.name});
+                         if(!(characterIfExistsAlreadyInDb.length)){
+                             const character = characterRepository.create({
+                                 id: v4(),
+                                 name: characterResponse.data.name,
+                             });
+                             await characterRepository.save(character);
+                             characters.push(characterIfExistsAlreadyInDb[0]);
 
-                     I went with the second one
-                     */
-                        const characterResponse = await axios.get(charUrl);
-                        const characterIfExistsAlreadyInDb = await characterRepository.findBy({name:characterResponse.data.name});
-                        if(!(characterIfExistsAlreadyInDb.length)){
-                            const character = characterRepository.create({
-                                id: v4(),
-                                name: characterResponse.data.name,
-                                film:film
-                            });
-                            await characterRepository.save(character);
-                            characters.push(character);
-                        }
+                         }
 
 
-                };
+                     };
+                 }
 
-                if (!film) {
+                if (film) {
+                    film.characters = [...film.characters, ...characters];
+                    await filmRepository.save(film);
+
+                    let film2 = await filmRepository.findOne({ where:{title:data.title}, relations:{
+                            characters:true
+                        } });
+
+                } else {
                     film = filmRepository.create({
                         id: v4(), // Using UUID v4 for uniqueness
                         title: data.title,

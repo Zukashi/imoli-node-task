@@ -20,6 +20,7 @@ export class Film {
     @Column()
     release_date: Date;
 
-    @OneToMany(() => Character, (character) => character.film, { cascade: true })
+    @ManyToMany(() => Character, { cascade: true })
+    @JoinTable()
     characters: Character[];
 }
