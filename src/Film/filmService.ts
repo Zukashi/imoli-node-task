@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from 'axios';
-import {FilmApiResponse, RawFilm, SimplifiedFilm} from "../types";
+import {FilmApiResponse, RawFilm, SimplifiedFilm} from "./types";
 import {axiosSwapi} from "../config/apiClient";
 
 export class FilmService {
@@ -11,6 +11,15 @@ export class FilmService {
                 release_date: film.release_date,
                 id: film.episode_id,
             }));
+        } catch (error) {
+            throw new Error('Error fetching films');
+        }
+    }
+
+    async fetchFilmById(id: number) {
+        try {
+            const response: AxiosResponse<RawFilm> = await axiosSwapi.get(`films/${id}`);
+            return response.data
         } catch (error) {
             throw new Error('Error fetching films');
         }
