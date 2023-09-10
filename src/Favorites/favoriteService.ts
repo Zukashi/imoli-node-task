@@ -20,8 +20,12 @@ export class FavoriteService {
             const characterRepo = transactionalEntityManager.getRepository(Character);
             const filmRepo = transactionalEntityManager.getRepository(Film);
             const favoriteListRepo = transactionalEntityManager.getRepository(Favorite);
-
-            // Single API call to fetch all films; we'll filter this array later
+            const favoriteList = favoriteListRepo.create({
+                id: v4(),
+                name: listName,
+                films: []  // Initialize empty array to hold films
+            });
+            // I download all films data at once instead of looping through each film to make it faster through filtering it on my own 
             const { data: allFilms }: { data: RawFilm[] } = await axiosSwapi.get('films');
 
             // Filter out only the films we are interested in
@@ -70,9 +74,11 @@ export class FavoriteService {
                     film.characters = [...film.characters, ...filmCharacters];
                     await filmRepo.save(film);
                 }
-
-                // TODO: Implement logic to save 'listName' and related films to the Favorites table
+                // Add the film to the favorite list's films
+                favoriteList.films.push(film);
             }
+            // Save the favorite list with its films after the loop finishes
+            await favoriteListRepo.save(favoriteList);
         });
     }
 }

@@ -3,7 +3,7 @@ import {Film} from "../../Film/entities/Film.entity";
 
 @Entity()
 export class Favorite {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id: string;
 
     @Column()
