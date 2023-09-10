@@ -10,6 +10,7 @@ import { axiosSwapi } from "../config/apiClient";
 import { ValidationError } from "../utils/errors";
 import { CharacterService } from "../Character/characterService";
 import { FilmService } from "../Film/filmService";
+import ExcelJS from "exceljs";
 
 // Initialize cache
 const myCache = new NodeCache({ stdTTL: 600 });  // 10 minute time to live
@@ -131,5 +132,44 @@ export class FavoriteService {
         }
 
         return favoriteList;
+    }
+
+    public async generateFavoriteExcel(favoriteId: string): Promise<ExcelJS.Buffer> {
+        // Fetch favorite list by ID
+        const favoriteList = await this.getFavoriteById(favoriteId);
+        if (!favoriteList){
+            throw new ValidationError('Favorite list doesnt exist', 404)
+        }
+        // Initialize Excel workbook and worksheet
+        const workbook = new ExcelJS.Workbook();
+        const worksheet = workbook.addWorksheet('Favorites');
+
+        // Headers
+        worksheet.columns = [
+            { header: 'Characters', key: 'characters', width: 50 },
+            { header: 'Films', key: 'films', width: 50 },
+        ];
+
+        // Aggregate characters and films
+        const characters: Set<string> = new Set();
+        const films: Set<string> = new Set();
+
+        favoriteList.films.forEach(film => {
+            films.add(film.title);
+            film.characters.forEach(character => {
+                characters.add(character.name);
+            });
+        });
+
+        // Add data to worksheet
+        worksheet.addRow({
+            characters: Array.from(characters).join(', '),
+            films: Array.from(films).join(', '),
+        });
+
+        // Generate Excel file as a buffer
+        const buffer = await workbook.xlsx.writeBuffer();
+
+        return buffer;
     }
 }

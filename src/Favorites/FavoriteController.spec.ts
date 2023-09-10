@@ -182,14 +182,15 @@ describe('FavoriteCont  roller', () => {
                 films: [],
             });
 
-            const response = await favoriteController.getFavoriteById(getMockRequest as Request, getMockResponse as Response);
-            console.log(response)
-            expect(getMockResponse.status).toHaveBeenCalledWith(200);
-            expect(getMockResponse.json).toHaveBeenCalledWith({
-                id: 'some-known-id',
-                name: '123',
-                films: [],
-            });
+
+                const response = await favoriteController.getFavoriteById(getMockRequest as Request, getMockResponse as Response);
+                expect(getMockResponse.status).toHaveBeenCalledWith(200);
+                expect(getMockResponse.json).toHaveBeenCalledWith({
+                    id: 'some-known-id',
+                    name: '123',
+                    films: [],
+                });
+
         });
 
         it('should return 404 for unknown favorite list ID', async () => {

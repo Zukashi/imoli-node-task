@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import {FavoriteService} from "./favoriteService";
 import {ValidationError} from "../utils/errors";
-
+import ExcelJS from 'exceljs';
 export class FavoriteController {
 
     constructor(public favoriteService: FavoriteService) {}
@@ -41,11 +41,28 @@ export class FavoriteController {
             if (!favoriteList) {
                 return res.status(404).json({ error: 'Favorite list not found' });
             }
-            console.log("Service Method Called");
             res.status(200).json(favoriteList);
         } catch (error) {
-            console.log(error);
             res.status(error.statusCode).json({ error: 'Internal Server Error' });
+        }
+    }
+    public async handleGetFavoriteExcel(req: Request, res: Response) {
+        try {
+            const favoriteId = req.params.id;
+            const excelBuffer = await this.favoriteService.generateFavoriteExcel(favoriteId);
+
+            res.setHeader(
+                'Content-Type',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            );
+            res.setHeader(
+                'Content-Disposition',
+                'attachment; filename=Favorites.xlsx'
+            );
+            res.end(excelBuffer);
+
+        } catch (error) {
+            res.status(500).json({ error: 'Failed to generate Excel file' });
         }
     }
 }
