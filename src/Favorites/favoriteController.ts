@@ -31,4 +31,15 @@ export class FavoriteController {
             res.status(500).json({ error: 'Internal Server Error' });
         }
     }
+
+    public async getFavoriteById(req: Request, res: Response) {
+        try {
+            const id = req.params.id; // Get the ID from the route parameters
+            const favoriteList = await this.favoriteService.getFavoriteById(id);
+            res.status(200).json(favoriteList);
+        } catch (error) {
+            console.log(error);
+            res.status(500).json({ error: 'Internal Server Error' });
+        }
+    }
 }

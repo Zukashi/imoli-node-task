@@ -115,4 +115,21 @@ export class FavoriteService {
             totalPages: Math.ceil(total / limit),
         };
     }
+
+    public async getFavoriteById(id: string): Promise<Favorite> {
+        const favoriteRepo = myDataSource.getRepository(Favorite);
+
+        const favoriteList = await favoriteRepo.findOne({
+            where:{
+                id
+            },
+            relations:['films', 'films.characters']
+        });
+
+        if (!favoriteList) {
+            throw new Error('Favorite list not found');
+        }
+
+        return favoriteList;
+    }
 }

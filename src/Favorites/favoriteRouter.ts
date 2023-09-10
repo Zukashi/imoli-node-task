@@ -16,6 +16,7 @@ const favoriteController = new FavoriteController(favoriteService);
 
 favoritesRouter.post('/',validationMiddleware(CreateFavoriteListDTO), (req,     res) => favoriteController.handleCreateFavoriteList(req, res))
     .get('/', validateQueryParams(GetFavoritesQueryDTO),(req,res) => favoriteController.getFavorites(req,res))
+    .get('/:id',(req,res) => favoriteController.getFavoriteById(req,res));
 ;
 
 
