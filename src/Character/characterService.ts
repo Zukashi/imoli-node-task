@@ -1,6 +1,6 @@
 import {Repository} from "typeorm";
 import {Character} from "./entities/Character.entity";
-import axios from "axios";
+import axios, {AxiosResponse} from "axios";
 import {v4} from "uuid";
 import {ValidationError} from "../utils/errors";
 
@@ -10,14 +10,13 @@ export class CharacterService {
     public async fetchCharacters(characterUrls: string[], characterRepo: Repository<Character>): Promise<Character[]> {
         try {
             const characterPromises = characterUrls.map(url => axios.get(url));
-            const characterResponses = await Promise.all(characterPromises);
+            const characterResponses:AxiosResponse<Character>[] = await Promise.all(characterPromises);
 
             const characters: Character[] = [];
             for (const { data: characterData } of characterResponses) {
                 let [character] = await characterRepo.find({ where: { name: characterData.name } });
-
                 if (!character) {
-                    character = characterRepo.create({ id: v4(), name: characterData.name });
+                    character = characterRepo.create({ id: v4(), ...characterData });
                     await characterRepo.save(character);
                 }
 
