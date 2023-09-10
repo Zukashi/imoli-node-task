@@ -18,6 +18,8 @@ COPY . .
 
 # Compile TypeScript to JavaScript
 
-CMD ["npm","run", "build"]
+# Compile TypeScript to JavaScript
+RUN npm run build
+
 # Start the application
-CMD [ "npm","run", "start" ]
+CMD [ "npm", "run", "start" ]

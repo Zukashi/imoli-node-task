@@ -19,6 +19,7 @@ const limiter = rateLimit({
 
 
 // establish database connection
+app.set('trust proxy', 1);
 myDataSource
     .initialize()
     .then(() => {
