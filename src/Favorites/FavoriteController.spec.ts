@@ -9,23 +9,36 @@ import { ValidationError } from '../utils/errors';
 import request from "supertest";
 import {app} from "../app";
 
-jest.mock('./favoriteService');
+jest.mock('./favoriteService.ts');
 jest.mock('../Character/characterService');
 jest.mock('../Film/filmService');
+let server;
+let port;
 
-describe('FavoriteController', () => {
+beforeAll((done) => {
+    server = app.listen(0, () => {
+        port = server.address();
+        done();
+    });
+});
+
+afterAll((done) => {
+    server.close(done);
+});
+describe('FavoriteCont  roller', () => {
     let favoriteController: FavoriteController;
     let mockRequest: Partial<Request>;
     let mockResponse: Partial<Response>;
-    let mockFavoriteService: jest.Mocked<FavoriteService>;
     let mockCharacterService: jest.Mocked<CharacterService>;
     let mockFilmService: jest.Mocked<FilmService>;
+    let mockFavoriteService: jest.Mocked<FavoriteService>;
 
     beforeEach(() => {
 
-        mockFavoriteService = new FavoriteService(mockCharacterService, mockFilmService) as jest.Mocked<FavoriteService>;
+
         mockCharacterService = new CharacterService() as jest.Mocked<CharacterService>;
         mockFilmService = new FilmService() as jest.Mocked<FilmService>;
+        mockFavoriteService = new FavoriteService(mockCharacterService, mockFilmService) as jest.Mocked<FavoriteService>;
 
         favoriteController = new FavoriteController(mockFavoriteService);
     });
@@ -43,13 +56,6 @@ describe('FavoriteController', () => {
                     name: 'My Favorite List'
                 }
             };
-        });
-        beforeAll(() => {
-            app.listen(3000);
-        });
-
-        afterAll((done) => {
-            app.listen(3000).close(done);
         });
         it('should create a new favorite list successfully', async () => {
             await favoriteController.handleCreateFavoriteList(mockRequest as Request, mockResponse as Response);
@@ -81,6 +87,7 @@ describe('FavoriteController', () => {
         });
     });
     describe('GET /favorites', () => {
+
         let getMockRequest: Partial<Request>;
         let getMockResponse: Partial<Response>;
         beforeEach(() => {
@@ -149,4 +156,60 @@ describe('FavoriteController', () => {
             });
          })});
 
+    describe('GET /favorites/:id', () => {
+        let getMockRequest: Partial<Request>;
+        let getMockResponse: Partial<Response>;
+
+        beforeEach(() => {
+            getMockResponse = {
+                status: jest.fn().mockReturnThis(),
+                json: jest.fn(),
+            };
+
+            getMockRequest = {
+                params:{
+                    id:'some-known-id'
+                }
+            }; // Your request setup here
+        });
+
+        it('should return details for a known favorite list ID', async () => {
+            const knownFavoriteListId = 'some-known-id';
+
+            mockFavoriteService.getFavoriteById.mockResolvedValue({
+                id: 'some-known-id',
+                name: '123',
+                films: [],
+            });
+
+            const response = await favoriteController.getFavoriteById(getMockRequest as Request, getMockResponse as Response);
+            console.log(response)
+            expect(getMockResponse.status).toHaveBeenCalledWith(200);
+            expect(getMockResponse.json).toHaveBeenCalledWith({
+                id: 'some-known-id',
+                name: '123',
+                films: [],
+            });
+        });
+
+        it('should return 404 for unknown favorite list ID', async () => {
+            const unknownFavoriteListId = 'some-unknown-id';
+
+            mockFavoriteService.getFavoriteById.mockResolvedValue(null);
+
+            const response = await favoriteController.getFavoriteById(getMockRequest as Request, getMockResponse as Response);
+
+            expect(getMockResponse.status).toHaveBeenCalledWith(404);
+            expect(getMockResponse.json).toHaveBeenCalledWith({ error: 'Favorite list not found' });
+        });
+
+        it('should return 404 for invalid favorite list ID format', async () => {
+            const invalidFavoriteListId = 'invalid-id';
+
+            const response = await favoriteController.getFavoriteById(getMockRequest as Request, getMockResponse as Response);
+
+            expect(getMockResponse.status).toHaveBeenCalledWith(404);
+            expect(getMockResponse.json).toHaveBeenCalledWith({ error: 'Favorite list not found' });
+        });
+    });
 });

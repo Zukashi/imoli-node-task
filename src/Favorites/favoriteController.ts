@@ -1,9 +1,10 @@
 import { Request, Response } from 'express';
 import {FavoriteService} from "./favoriteService";
+import {ValidationError} from "../utils/errors";
 
 export class FavoriteController {
 
-    constructor(private favoriteService: FavoriteService) {}
+    constructor(public favoriteService: FavoriteService) {}
 
     public async handleCreateFavoriteList(req: Request, res: Response) {
         try {
@@ -34,12 +35,17 @@ export class FavoriteController {
 
     public async getFavoriteById(req: Request, res: Response) {
         try {
-            const id = req.params.id; // Get the ID from the route parameters
+            const {id} = req.params;
+
             const favoriteList = await this.favoriteService.getFavoriteById(id);
+            if (!favoriteList) {
+                return res.status(404).json({ error: 'Favorite list not found' });
+            }
+            console.log("Service Method Called");
             res.status(200).json(favoriteList);
         } catch (error) {
             console.log(error);
-            res.status(500).json({ error: 'Internal Server Error' });
+            res.status(error.statusCode).json({ error: 'Internal Server Error' });
         }
     }
 }

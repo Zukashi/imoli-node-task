@@ -1,5 +1,4 @@
-import axios, { AxiosResponse } from 'axios';
-import {FilmApiResponse, RawFilm, SimplifiedFilm} from "./types";
+import {     RawFilm, SimplifiedFilm} from "./types";
 import {axiosSwapi} from "../config/apiClient";
 import {Repository} from "typeorm";
 import {Film} from "./entities/Film.entity";
