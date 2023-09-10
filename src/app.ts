@@ -2,11 +2,19 @@ import express from 'express';
 import 'reflect-metadata';
 import {myDataSource} from "./config/app-data-source";
 import cors from 'cors';
-import { Request, Response } from 'express';
 import {handleError} from "./utils/errors";
 import {filmRouter} from "./Film/filmRouter";
 import {favoritesRouter} from "./Favorites/favoriteRouter";
+import rateLimit from "express-rate-limit";
 export const app = express();
+
+
+
+// Enable rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100 // limit each IP to 100 requests per windowMs
+});
 
 
 
@@ -19,15 +27,15 @@ myDataSource
     .catch((err) => {
         console.error("Error during Data Source initialization:", err)
     })
+// Apply the rate limiter to all requests
+app.use(limiter);
 // Middleware setup
 app.use(cors());
 app.use(express.json());
-app.use(handleError);
+
 app.use('/films', filmRouter);
 app.use('/favorites', favoritesRouter);
-app.get('/', (req: Request, res: Response) => {
-    res.send('Hello World');
-});
+app.use(handleError);
 
 app.listen(3000, () => {
     console.log('Server started on http://localhost:3000');

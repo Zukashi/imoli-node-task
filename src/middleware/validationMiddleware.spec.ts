@@ -1,11 +1,7 @@
-
-
 import request from 'supertest';
 import express, {NextFunction, Response, Request} from 'express';
 import { validationMiddleware } from './validationMiddleware';
 import {CreateFavoriteListDTO} from "../Favorites/dto/CreateFavoriteList.dto";
-
-
 
 const app = express();
 app.use(express.json());
