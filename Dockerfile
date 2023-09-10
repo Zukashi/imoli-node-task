@@ -17,7 +17,7 @@ RUN npm install
 COPY . .
 
 # Compile TypeScript to JavaScript
-RUN tsc
 
+CMD ["npm","run", "build"]
 # Start the application
-CMD [ "npm", "start" ]
+CMD [ "npm","run", "start" ]
