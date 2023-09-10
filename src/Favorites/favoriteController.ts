@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import { InternalServiceError } from "../utils/errors";
 import {FavoriteService} from "./favoriteService";
 
 export class FavoriteController {

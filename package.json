@@ -18,7 +18,7 @@
   },
   "scripts": {
     "start-dev": "ts-node-dev src/app.ts",
-    "test": "jest --verbose ./tests/unit/controllers"
+    "test": "jest --no-cache "
   },
   "keywords": [],
   "author": "",

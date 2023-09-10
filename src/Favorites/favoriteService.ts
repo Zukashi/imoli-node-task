@@ -3,7 +3,6 @@ import { v4 } from 'uuid';
 import { Character } from "../Character/entities/Character.entity";
 import { Film } from "../Film/entities/Film.entity";
 import { RawFilm } from "../Film/types";
-import axios from "axios";
 import { Favorite } from "./entities/Favorite.entity";
 import { Repository, EntityManager } from 'typeorm';
 import { axiosSwapi } from "../config/apiClient";

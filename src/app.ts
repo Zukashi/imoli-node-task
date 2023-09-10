@@ -1,4 +1,5 @@
 import express from 'express';
+import 'reflect-metadata';
 import {myDataSource} from "./config/app-data-source";
 import cors from 'cors';
 import { Request, Response } from 'express';

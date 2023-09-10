@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { FilmService } from './filmService';
 import { FilmController } from './filmController';
 
-jest.mock('../../../src/services/filmService');
+jest.mock('./filmService');
 
 describe('GET /films', () => {
     let mockRequest: Partial<Request>;

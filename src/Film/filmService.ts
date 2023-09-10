@@ -10,26 +10,17 @@ import {ValidationError} from "../utils/errors";
 export class FilmService {
     public async fetchFilms(): Promise<SimplifiedFilm[]> {
         try {
-            const response: AxiosResponse<FilmApiResponse> = await axiosSwapi.get('films');
-            return response.data.results.map((film: RawFilm) => ({
+            const {data:apiFilms}:{data:RawFilm[]} = await axiosSwapi.get('films');
+            const films = apiFilms.map((film: RawFilm):SimplifiedFilm => ({
                 title: film.title,
                 release_date: film.release_date,
                 id: film.episode_id,
             }));
+            return films
         } catch (error) {
             throw new Error('Error fetching films');
         }
     }
-
-    async fetchFilmById(id: number) {
-        try {
-            const response: AxiosResponse<RawFilm> = await axiosSwapi.get(`films/${id}`);
-            return response.data
-        } catch (error) {
-            throw new Error('Error fetching films');
-        }
-    }
-
     public async findOrCreateFilm(filmData: RawFilm, filmRepo: Repository<Film>, characters: Character[]): Promise<Film> {
         try {
             let film = await filmRepo.findOne({
