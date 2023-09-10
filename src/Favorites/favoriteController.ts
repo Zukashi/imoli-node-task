@@ -15,9 +15,9 @@ export class FavoriteController {
             const newFavoriteList = await this.favoriteService.createFavorite(filmIds, name);
             res.status(201).json(newFavoriteList);
         } catch (error) {
-            const internalError = new InternalServiceError(error, 500);
             // Here you could log the error or take other actions
-            res.status(internalError.statusCode!).json({error: internalError.message});
+            console.log(error)
+            res.status(error.statusCode).json({error: error.message});
         }
     }
 }

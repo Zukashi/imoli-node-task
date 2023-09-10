@@ -1,84 +1,61 @@
-import {myDataSource} from "../config/app-data-source";
-import {v4} from 'uuid';
-import {Character} from "../Character/entities/Character.entity";
-import {FilmService} from "../Film/filmService";
-import {axiosSwapi} from "../config/apiClient";
-import {Film} from "../Film/entities/Film.entity";
-import { RawFilm} from "../Film/types";
+import { myDataSource } from "../config/app-data-source";
+import { v4 } from 'uuid';
+import { Character } from "../Character/entities/Character.entity";
+import { Film } from "../Film/entities/Film.entity";
+import { RawFilm } from "../Film/types";
 import axios from "axios";
-import {Favorite} from "./entities/Favorite.entity";
+import { Favorite } from "./entities/Favorite.entity";
+import { Repository, EntityManager } from 'typeorm';
+import { axiosSwapi } from "../config/apiClient";
+import {ValidationError} from "../utils/errors";
+import {CharacterService} from "../Character/characterService";
+import {FilmService} from "../Film/filmService";
 
 export class FavoriteService {
-    // Dependency injection of FilmService to use its functionalities
-    constructor(public filmService: FilmService) { }
 
-    // Method to create a favorite list based on given film IDs and a name for the list
+    constructor(
+        private characterService: CharacterService,
+        private filmService:FilmService
+    ) {}
+
+
     public async createFavorite(filmIds: number[], listName: string) {
-        // Transaction ensures atomicity, all or nothing
-        await myDataSource.transaction(async (transactionalEntityManager) => {
-            // Initialize Repositories
-            const characterRepo = transactionalEntityManager.getRepository(Character);
-            const filmRepo = transactionalEntityManager.getRepository(Film);
-            const favoriteListRepo = transactionalEntityManager.getRepository(Favorite);
-            const favoriteList = favoriteListRepo.create({
-                id: v4(),
-                name: listName,
-                films: []  // Initialize empty array to hold films
-            });
-            // I download all films data at once instead of looping through each film to make it faster through filtering it on my own 
-            const { data: allFilms }: { data: RawFilm[] } = await axiosSwapi.get('films');
+        try {
+            await myDataSource.transaction(async (transactionalEntityManager: EntityManager) => {
+                const characterRepo = transactionalEntityManager.getRepository(Character);
+                const filmRepo = transactionalEntityManager.getRepository(Film);
+                const favoriteListRepo = transactionalEntityManager.getRepository(Favorite);
 
-            // Filter out only the films we are interested in
-            const selectedFilms = allFilms.filter(film => filmIds.includes(film.episode_id));
-
-            // Loop over each selected film
-            for (const filmData of selectedFilms) {
-                // Initialize an empty array to hold characters of the film
-                let filmCharacters: Character[] = [];
-
-                // Concurrently fetch character details for the current film
-                const characterPromises = filmData.characters.map(url => axios.get(url));
-                const characterResponses = await Promise.all(characterPromises);
-
-                // Loop over each character to find or create it in the database
-                for (const { data: characterData } of characterResponses) {
-                    let [character] = await characterRepo.find({ where: { name: characterData.name } });
-
-                    // If character doesn't exist, create and save it
-                    if (!character) {
-                        character = characterRepo.create({ id: v4(), name: characterData.name });
-                        await characterRepo.save(character);
-                    }
-
-                    // Add the character to the film's character list
-                    filmCharacters.push(character);
-                }
-
-                // Fetch existing film by title or create a new one
-                let film = await filmRepo.findOne({
-                    where: { title: filmData.title },
-                    relations: ["characters"]
+                // Create a new favorite list entity
+                const favoriteList = favoriteListRepo.create({
+                    id: v4(),
+                    name: listName,
+                    films: []
                 });
-
-                // If film doesn't exist, create and save it
-                if (!film) {
-                    film = filmRepo.create({
-                        id: v4(),
-                        title: filmData.title,
-                        release_date: new Date(filmData.release_date),
-                        characters: filmCharacters
-                    });
-                    await filmRepo.save(film);
-                } else {
-                    // Update the existing film's characters and save changes
-                    film.characters = [...film.characters, ...filmCharacters];
-                    await filmRepo.save(film);
+                // Check if list with this name already exists
+                const existingList = await favoriteListRepo.findOne({ where: {name:listName} });
+                if (existingList) {
+                    throw new ValidationError("List name already exists.", 409);
                 }
-                // Add the film to the favorite list's films
-                favoriteList.films.push(film);
-            }
-            // Save the favorite list with its films after the loop finishes
-            await favoriteListRepo.save(favoriteList);
-        });
+                // Fetch all films from SWAPI
+                const { data: allFilms }: { data: RawFilm[] } = await axiosSwapi.get('films');
+                const selectedFilms = allFilms.filter(film => filmIds.includes(film.episode_id));
+                for (const filmData of selectedFilms) {
+                    // Fetch or create characters related to the film
+                    const filmCharacters = await this.characterService.fetchCharacters(filmData.characters, characterRepo);
+                    // Fetch or create the film and update its characters
+                    const film = await this.filmService.findOrCreateFilm(filmData, filmRepo, filmCharacters);
+
+                    // Add the film to the favorite list
+                    favoriteList.films.push(film);
+                }
+
+                // Save the favorite list to the database
+                await favoriteListRepo.save(favoriteList);
+            });
+        } catch (error) {
+            console.error('Error while creating favorite:', error.message);
+            throw new ValidationError(error.message, error.statusCode);
+        }
     }
 }
