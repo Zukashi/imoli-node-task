@@ -5,7 +5,7 @@ import { Character } from "../Character/entities/Character.entity";
 import { Film } from "../Film/entities/Film.entity";
 import { RawFilm } from "../Film/types";
 import { Favorite } from "./entities/Favorite.entity";
-import { Repository, EntityManager } from 'typeorm';
+import {Repository, EntityManager, Like} from 'typeorm';
 import { axiosSwapi } from "../config/apiClient";
 import { ValidationError } from "../utils/errors";
 import { CharacterService } from "../Character/characterService";
@@ -97,5 +97,22 @@ export class FavoriteService {
         }
 
         return favoriteList;
+    }
+
+    public async getFavorites(page: number, limit: number, name?: string): Promise<{ data: Favorite[], total: number, currentPage: number, totalPages: number }> {
+        const favoriteRepo = myDataSource.getRepository(Favorite);
+
+        const [results, total] = await favoriteRepo.findAndCount({
+            where: name ? { name: Like(`%${name}%`) } : {},
+            take: limit,
+            skip: (page - 1) * limit,
+        });
+
+        return {
+            data: results,
+            total: total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+        };
     }
 }
