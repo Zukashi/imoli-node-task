@@ -1,3 +1,4 @@
+import NodeCache from 'node-cache';
 import { myDataSource } from "../config/app-data-source";
 import { v4 } from 'uuid';
 import { Character } from "../Character/entities/Character.entity";
@@ -10,6 +11,9 @@ import { ValidationError } from "../utils/errors";
 import { CharacterService } from "../Character/characterService";
 import { FilmService } from "../Film/filmService";
 
+// Initialize cache
+const myCache = new NodeCache({ stdTTL: 600 });  // 10 minute time to live
+
 export class FavoriteService {
     constructor(
         private characterService: CharacterService,
@@ -18,18 +22,18 @@ export class FavoriteService {
 
     public async createFavorite(filmIds: number[], listName: string): Promise<void> {
         try {
+            // Transactional operation to ensure atomicity
             await myDataSource.transaction(async (transactionalEntityManager: EntityManager) => {
-                // Initialize Repositories
                 const characterRepo = transactionalEntityManager.getRepository(Character);
                 const filmRepo = transactionalEntityManager.getRepository(Film);
                 const favoriteListRepo = transactionalEntityManager.getRepository(Favorite);
 
-                // Check if list with this name already exists
+                // Check if list name already exists with cache
                 if (await this.listNameExists(listName, favoriteListRepo)) {
                     throw new ValidationError("List name already exists.", 409);
                 }
 
-                // Fetch films and add to favorites
+                // Build favorite list after fetching or caching films and characters
                 const favoriteList = await this.buildFavoriteList(filmIds, listName, filmRepo, characterRepo);
 
                 // Save the favorite list to the database
@@ -41,19 +45,38 @@ export class FavoriteService {
         }
     }
 
+    // Function to check if list name already exists with caching
     private async listNameExists(listName: string, favoriteListRepo: Repository<Favorite>): Promise<boolean> {
+        const cacheKey = `listName-${listName}`;
+        const cachedValue = myCache.get(cacheKey);
+        if (cachedValue) {
+            return true;
+        }
         const existingList = await favoriteListRepo.findOne({ where: { name: listName } });
-        return !!existingList;
+        const exists = !!existingList;
+        if (exists) {
+            myCache.set(cacheKey, true);
+        }
+        return exists;
     }
 
+    // Function to build favorite list with caching for films
     private async buildFavoriteList(
         filmIds: number[],
         listName: string,
         filmRepo: Repository<Film>,
         characterRepo: Repository<Character>
     ): Promise<Favorite> {
-        // Fetch all films from SWAPI
-        const { data: allFilms }: { data: RawFilm[] } = await axiosSwapi.get('films');
+        const cacheKey = 'allFilms';
+        let allFilms: RawFilm[] = myCache.get(cacheKey) || [];
+
+        // Fetch all films from SWAPI and cache it
+        if (!allFilms.length) {
+            const { data } = await axiosSwapi.get('films');
+            allFilms = data;
+            myCache.set(cacheKey, allFilms);
+        }
+
         const selectedFilms = allFilms.filter(film => filmIds.includes(film.episode_id));
 
         // Create a new favorite list entity
