@@ -24,8 +24,11 @@
   },
   "scripts": {
     "start-dev": "ts-node-dev src/app.ts",
+    "start": "node dist/app.js",
+    "build": "tsc",
     "test": "jest --no-cache "
   },
+
   "keywords": [],
   "author": "",
   "license": "ISC",
