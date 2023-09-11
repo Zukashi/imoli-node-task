@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import 'reflect-metadata';
 import {myDataSource} from "./config/app-data-source";
@@ -6,8 +8,7 @@ import {handleError} from "./utils/errors";
 import {filmRouter} from "./Film/filmRouter";
 import {favoritesRouter} from "./Favorites/favoriteRouter";
 import rateLimit from "express-rate-limit";
-import * as dotenv from 'dotenv'
-dotenv.config();
+
 
 
 
