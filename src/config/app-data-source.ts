@@ -7,7 +7,7 @@ export const myDataSource = new DataSource({
     type: "postgres",
     url:process.env.DATABASE_HOST,
     ssl: {
-        rejectUnauthorized: false,  // This is for development, use `true` in production
+        rejectUnauthorized: true,  // This is for development, use `true` in production
     },
     synchronize:true,
     entities: [Character,Favorite,Film],
