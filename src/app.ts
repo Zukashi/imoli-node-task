@@ -6,7 +6,8 @@ import {handleError} from "./utils/errors";
 import {filmRouter} from "./Film/filmRouter";
 import {favoritesRouter} from "./Favorites/favoriteRouter";
 import rateLimit from "express-rate-limit";
-export const app = express();
+import * as dotenv from 'dotenv'
+dotenv.config();
 
 
 
@@ -19,7 +20,7 @@ const limiter = rateLimit({
 
 
 // establish database connection
-app.set('trust proxy', 1);
+
 myDataSource
     .initialize()
     .then(() => {
@@ -29,6 +30,8 @@ myDataSource
         console.error("Error during Data Source initialization:", err)
     })
 // Apply the rate limiter to all requests
+export const app = express();
+app.set('trust proxy', 1);
 app.use(limiter);
 // Middleware setup
 app.use(cors());
