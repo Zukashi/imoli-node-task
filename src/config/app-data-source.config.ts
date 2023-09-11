@@ -17,7 +17,7 @@ export let myDataSource:DataSource
     }else{
         myDataSource = new DataSource({
             type: "postgres",
-            host: process.env.DATABASE_HOST ?  'db' : "localhost",
+            host: process.env.DATABASE_HOST ?  'db' : "127.0.0.1",
             port: 5432,
             username: "postgres",
             password: "",
