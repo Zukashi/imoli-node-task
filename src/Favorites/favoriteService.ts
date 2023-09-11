@@ -1,5 +1,5 @@
 import NodeCache from 'node-cache';
-import { myDataSource } from "../config/app-data-source";
+import { myDataSource } from "../config/app-data-source.config";
 import { v4 } from 'uuid';
 import { Character } from "../Character/entities/Character.entity";
 import { Film } from "../Film/entities/Film.entity";

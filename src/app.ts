@@ -2,7 +2,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
 import 'reflect-metadata';
-import {myDataSource} from "./config/app-data-source";
+import {myDataSource} from "./config/app-data-source.config";
 import cors from 'cors';
 import {handleError} from "./utils/errors";
 import {filmRouter} from "./Film/filmRouter";

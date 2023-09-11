@@ -23,5 +23,6 @@ export let myDataSource:DataSource
             password: "",
             database: "postgres",
             entities: [Character,Favorite,Film],
+            synchronize:true // might delete data on production
         })
     }
