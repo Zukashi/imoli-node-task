@@ -40,10 +40,10 @@ export class FavoriteController {
             const favoriteList = await this.favoriteService.getFavoriteById(id);
             if (!favoriteList) {
                 return res.status(404).json({ error: 'Favorite list not found' });
-            }
+        }
             res.status(200).json(favoriteList);
         } catch (error) {
-            res.status(error.statusCode).json({ error: 'Internal Server Error' });
+            res.status(error.statusCode).json({ error: error.message });
         }
     }
     public async handleGetFavoriteExcel(req: Request, res: Response) {
@@ -62,7 +62,7 @@ export class FavoriteController {
             res.end(excelBuffer);
 
         } catch (error) {
-            res.status(500).json({ error: 'Failed to generate Excel file' });
+            res.status(error.statusCode).json({ error: error.message });
         }
     }
 }

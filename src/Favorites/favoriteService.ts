@@ -119,27 +119,31 @@ export class FavoriteService {
 
     public async getFavoriteById(id: string): Promise<Favorite> {
         const favoriteRepo = myDataSource.getRepository(Favorite);
-
-        const favoriteList = await favoriteRepo.findOne({
+        try{
+            const favoriteList = await favoriteRepo.findOne({
             where:{
                 id
             },
             relations:['films', 'films.characters']
         });
 
-        if (!favoriteList) {
-            throw new Error('Favorite list not found');
+            return favoriteList;
+        }
+        catch(e){
+            throw new ValidationError('Favorite list not found', 404);
+        }
         }
 
-        return favoriteList;
-    }
+
+
+
+
 
     public async generateFavoriteExcel(favoriteId: string): Promise<ExcelJS.Buffer> {
-        // Fetch favorite list by ID
+       try{
+            // Fetch favorite list by ID
         const favoriteList = await this.getFavoriteById(favoriteId);
-        if (!favoriteList){
-            throw new ValidationError('Favorite list doesnt exist', 404)
-        }
+
         // Initialize Excel workbook and worksheet
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Favorites');
@@ -171,5 +175,8 @@ export class FavoriteService {
         const buffer = await workbook.xlsx.writeBuffer();
 
         return buffer;
+       }catch(e){
+            throw new ValidationError(e.message, e.statusCode)
+       }
     }
 }
